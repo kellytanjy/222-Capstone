@@ -47,8 +47,10 @@ totaltry=total %>%
 
 #Factor Analysis
 fit=factanal(totaltry[,3:5],1)
-print(fit)
+#print(fit)
 t=as.matrix(totaltry[,3:5]) %*% fit$loadings
+fa=data.frame(Gene=totaltry$Gene,Case=totaltry$Case,Measure=t)
+reshapeback=dcast(fa,Gene~Case)
 #firstrow=read_delim("222_data/unifiedScaled.txt", 
 #                    "\t", escape_double = FALSE, col_names = FALSE, 
 #                    trim_ws = TRUE, skip = 0,n_max=1)
@@ -63,6 +65,7 @@ t=as.matrix(totaltry[,3:5]) %*% fit$loadings
 #filtered=filtered[-1,] %>%
 #  sapply(as.numeric) %>%
 #  as_data_frame()
-#
-# Factor Analysis
+
+
+
 
