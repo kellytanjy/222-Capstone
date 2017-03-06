@@ -1,0 +1,139 @@
+---
+title: 'STAT 222: Gene Genome: Integrated Genomic Analysis for Glioblastoma'
+author: "Cheng Li, Jingyi Tan, Laura Katz"
+date: "March 5, 2017"
+output: pdf_document
+---
+
+## Load Package:
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+```
+
+## Read in data
+```{r}
+Broad202 = read_delim("222_data/Broad202.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+LBL202 = read_delim("222_data/LBL202.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+UNC202 = read_delim("222_data/UNC202.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+colnames(UNC202)[1]="Gene"
+
+firstrow=read_delim("222_data/unifiedScaled.txt", 
+                    "\t", escape_double = FALSE, col_names = FALSE,
+                    trim_ws = TRUE, skip = 0,n_max=1)
+unifiedScaled = read_delim("222_data/unifiedScaled.txt",
+                           "\t", escape_double = FALSE, col_names = FALSE, 
+                           trim_ws = TRUE, skip = 1) %>% 
+  `colnames<-`(value=c('Gene',firstrow))
+rm(list="firstrow")
+```
+
+## Reshape the data
+```{r}
+merge_genes=intersect(LBL202$Gene,UNC202$Gene) %>% intersect(Broad202$Gene)
+merge_ids=intersect(colnames(LBL202)[-1],colnames(UNC202)[-1]) %>% 
+  intersect(colnames(Broad202)[-1])
+unc= UNC202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(UNC202))) %>%
+  melt(id.vars="Gene")
+broad=Broad202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(Broad202))) %>%
+  melt(id.vars='Gene')
+lbl=LBL202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(LBL202))) %>%
+  melt(id.vars='Gene')
+```
+
+## Boxplot of data
+Randomly pick 10 genes for each dataset and check their boxplot
+```{r}
+sub_gene <- sample(merge_genes, size = 10, replace = FALSE)
+sub_lbl <- filter(lbl, Gene %in% sub_gene)
+plot(as.factor(sub_lbl$Gene), sub_lbl$value)
+```
+
+## range of each dataset
+```{r}
+range(lbl$value)
+range(unc$value)
+range(broad$value)
+apply(LBL202[1:10,-1],1,median)
+apply(LBL202[1:10,-1],1,mean)
+apply(Broad202[1:10,-1],1,median)
+apply(Broad202[1:10,-1],1,mean)
+apply(UNC202[1:10,-1],1,median)
+apply(UNC202[1:10,-1],1,mean)
+```
+After checking the range of gene expression values for each data set, we found out that only UNC202 dataset has negative values, implying that it might be log-transformed already. However, the other two datasets don't contain negative values, so we believed that they are subjective to log-transform. In addition, the three datasets are not mean/median centered either. Therefore, our next step should be log-transforming data and centering data by its median.
+
+## Get Log-transformed & median centered data
+```{r}
+#lbl$value=log(lbl$value)
+range(lbl$value)
+#broad$value = log(broad$value)
+range(broad$value)
+LBL202[,-1] = t(apply(LBL202[,-1],1,function(x) {x - median(x)}))
+UNC202[,-1] = t(apply(UNC202[,-1],1,function(x) {x - median(x)}))
+Broad202[,-1] = t(apply(Broad202[,-1],1,function(x) {x - median(x)}))
+```
+
+## Reshape the data again
+```{r}
+merge_genes=intersect(LBL202$Gene,UNC202$Gene) %>% intersect(Broad202$Gene)
+merge_ids=intersect(colnames(LBL202)[-1],colnames(UNC202)[-1]) %>% 
+  intersect(colnames(Broad202)[-1])
+unc= UNC202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(UNC202))) %>%
+  melt(id.vars="Gene")
+broad=Broad202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(Broad202))) %>%
+  melt(id.vars='Gene')
+lbl=LBL202 %>%
+  filter(Gene %in% merge_genes) %>%
+  select(Gene,match(merge_ids,colnames(LBL202))) %>%
+  melt(id.vars='Gene')
+```
+
+## Boxplot of data
+Verify that the data has been median-centered and log-transformed
+```{r}
+sub_gene <- sample(merge_genes, size = 10, replace = FALSE)
+sub_lbl <- filter(lbl, Gene %in% sub_gene)
+sub_unc <- filter(unc, Gene %in% sub_gene)
+sub_broad <- filter(broad, Gene %in% sub_gene)
+plot(as.factor(sub_lbl$Gene), sub_lbl$value)
+plot(as.factor(sub_unc$Gene), sub_unc$value)
+plot(as.factor(sub_broad$Gene), sub_broad$value)
+```
+
+## Normalize data
+```{r}
+total=unc %>%
+  merge(broad,by=c('Gene','variable')) %>%
+  merge(lbl,by=c('Gene','variable')) %>%
+  `colnames<-`(value=c('Gene','Case','unc','broad','lbl'))
+totaltry=total %>% 
+  mutate(
+    unc=scale(unc),
+    broad=scale(broad),
+    lbl=scale(lbl))
+```
+
+## Factor Analysis
+```{r}
+fit=factanal(totaltry[,3:5],1)
+print(fit)
+loadings = fit$loadings
+fa = data.matrix(totaltry[,3:5]) %*% loadings
+fa_matrix = matrix(fa, ncol = 202, byrow=TRUE)
+true_matrix = data.matrix(unifiedScaled[,-1])
+```
+
+
