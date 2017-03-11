@@ -136,4 +136,33 @@ fa_matrix = matrix(fa, ncol = 202, byrow=TRUE)
 true_matrix = data.matrix(unifiedScaled[,-1])
 ```
 
+#Clustering
+```{r}
+#install.packages('fastcluster')
+#library(fastcluster)
+dat= read_delim("222_data/unifiedScaledFiltered.txt",
+                           "\t", escape_double = FALSE, col_names = T, 
+                           trim_ws = TRUE, skip = 1) %>%
+    `colnames<-`(value=c('Gene',seq(1,202,by=1)))
+#seems best
+cluster1=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')))   #linkage=Complete/using euclidean distance
+plot(cluster1)
+#not good
+cluster2=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
+                method='single') #linkage=Single/using euclidean distance
+plot(cluster2)
+#used in paper, seems not good as cluster1
+cluster3=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
+                method='average') #linkage=Average/using euclidean distance
+plot(cluster3)
+#not good
+cluster4=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
+                method='centroid') #linkage="centroid"/using euclidean distance
+plot(cluster4)
+```
 
+#SAM: significance anlysis of microarrays
+```{r}
+
+
+```
