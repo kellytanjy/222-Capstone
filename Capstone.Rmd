@@ -188,7 +188,9 @@ dat= read_delim("222_data/unifiedScaledFiltered.txt",
                            trim_ws = TRUE, skip = 1) %>%
     `colnames<-`(value=c('Gene',firstrow))
 
-
+rownames(dat)=dat$Gene
+dat = dat %>%
+  select(-Gene)
 
 ```
 
