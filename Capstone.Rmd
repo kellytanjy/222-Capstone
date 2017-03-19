@@ -137,12 +137,26 @@ fa_matrix = matrix(fa, ncol = 202, byrow=TRUE)
 true_matrix = data.matrix(unifiedScaled[,-1])
 ```
 
-#Clustering
+# Consensus Clustering
+Reference: Consensus Clustering: A Resampling-Based Method for Class Discovery and Visualization of Gene Expression Microarray Data ("http://download.springer.com/static/pdf/906/art%253A10.1023%252FA%253A1023949509487.pdf?originUrl=http%3A%2F%2Flink.springer.com%2Farticle%2F10.1023%2FA%3A1023949509487&token2=exp=1489959966~acl=%2Fstatic%2Fpdf%2F906%2Fart%25253A10.1023%25252FA%25253A1023949509487.pdf%3ForiginUrl%3Dhttp%253A%252F%252Flink.springer.com%252Farticle%252F10.1023%252FA%253A1023949509487*~hmac=c5eb7ab0ea30610b34447b1f0f0985f7109d22a58ab9f13702315a47ecd1f53e")
+
+# Install the package "ConsensusClusterPlus"
+Instruction is on "https://www.bioconductor.org/packages/release/bioc/html/ConsensusClusterPlus.html"
+```{r}
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("ConsensusClusterPlus")
+library(ConsensusClusterPlus)
+```
+
+```{r}
+
+```
+
 ```{r}
 #install.packages('fastcluster')
 #library(fastcluster)
 dat= read_delim("222_data/unifiedScaledFiltered.txt",
-                           "\t", escape_double = FALSE, col_names = T, 
+                           "\t", escape_double = FALSE, col_names = F, 
                            trim_ws = TRUE, skip = 1) %>%
     `colnames<-`(value=c('Gene',seq(1,202,by=1)))
 #seems best
