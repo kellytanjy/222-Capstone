@@ -128,8 +128,9 @@ totaltry=total %>%
 
 ## Factor Analysis
 ```{r}
-fit=factanal(totaltry[,3:5],1)
+fit=factanal(totaltry[,3:5],1, scores = "regression")
 print(fit)
+scores =fit$scores
 loadings = fit$loadings
 fa = data.matrix(totaltry[,3:5]) %*% loadings
 fa_matrix = matrix(fa, ncol = 202, byrow=TRUE)
