@@ -224,6 +224,52 @@ id4dat=dat[,as.character(id4$ID)]
 bcol_bind(id1dat,id2dat)
 ```
 
+#sigclust analysis
+```{r}
+###pairwise comparison of clusters using 4 clusters
+clust_labels <- res[[4]]$consensusClass
+#clusters 1 and 2
+labels_12 <- clust_labels[clust_labels == 1 | clust_labels == 2] #subset labels to just clusters 1 and 2
+sigclust_data12 <- dat[rownames(as.data.frame(labels_12))]
+sigclust_output12 <- sigclust(x = t(sigclust_data12), nsim = 1000, labflag=1, label=labels_12, icovest=1) #transpose data so samples are rows, variables are columns
+p_clust12 <- sigclust_output12@pval #use @ operator to extract elements of object of class sigclust
+
+#clusters 1 and 3
+labels_13 <- clust_labels[clust_labels == 1 | clust_labels == 3] 
+labels_13[labels_13 == 3] <- 2 #labels must be 1 or 2
+sigclust_data13 <- dat[rownames(as.data.frame(labels_13))]
+sigclust_output13 <- sigclust(x = t(sigclust_data13), nsim = 1000, labflag=1, label=labels_13, icovest=1)
+p_clust13 <- sigclust_output13@pval
+
+#clusters 1 and 4
+labels_14 <- clust_labels[clust_labels == 1 | clust_labels == 4] 
+labels_14[labels_14 == 4] <- 2
+sigclust_data14 <- dat[rownames(as.data.frame(labels_14))]
+sigclust_output14 <- sigclust(x = t(sigclust_data14), nsim = 1000, labflag=1, label=labels_14, icovest=1)
+p_clust14 <- sigclust_output14@pval
+
+#clusters 2 and 3
+labels_23 <- clust_labels[clust_labels == 2 | clust_labels == 3] 
+labels_23[labels_23 == 3] <- 1
+sigclust_data23 <- dat[rownames(as.data.frame(labels_23))]
+sigclust_output23 <- sigclust(x = t(sigclust_data23), nsim = 1000, labflag=1, label=labels_23, icovest=1)
+p_clust23 <- sigclust_output23@pval
+
+#clusters 2 and 4
+labels_24 <- clust_labels[clust_labels == 2 | clust_labels == 4] 
+labels_24[labels_24 == 4] <- 1
+sigclust_data24 <- dat[rownames(as.data.frame(labels_24))]
+sigclust_output24 <- sigclust(x = t(sigclust_data24), nsim = 1000, labflag=1, label=labels_24, icovest=1)
+p_clust24 <- sigclust_output24@pval
+
+#clusters 3 and 4
+labels_34 <- clust_labels[clust_labels == 3 | clust_labels == 4] 
+labels_34[labels_34 == 3] <- 1
+labels_34[labels_34 == 4] <- 2
+sigclust_data34 <- dat[rownames(as.data.frame(labels_34))]
+sigclust_output34 <- sigclust(x = t(sigclust_data34), nsim = 1000, labflag=1, label=labels_34, icovest=1)
+p_clust34 <- sigclust_output34@pval
+```
 
 #SAM: significance anlysis of microarrays
 ```{r}
