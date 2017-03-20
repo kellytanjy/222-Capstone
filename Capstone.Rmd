@@ -180,6 +180,7 @@ plot(cluster4)
 ```{r}
 library(dplyr)
 library(readr)
+library(ConsensusClusterPlus)
 firstrow=read_delim("222_data/unifiedScaled.txt", 
                     "\t", escape_double = FALSE, col_names = FALSE,
                     trim_ws = TRUE, skip = 0,n_max=1)
@@ -192,7 +193,7 @@ rownames(dat)=dat$Gene
 dat = dat %>%
   select(-Gene)
 
-res = ConsensusClusterPlus(as.matrix(dat),maxK=6,reps=50,pItem=0.8,pFeature=1,
+res = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1,
       clusterAlg="hc",distance="pearson",seed=12,plot="png")
 
 labels=as.data.frame(t(cutree(res[[4]]$consensusTree,4))) %>%
