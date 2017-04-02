@@ -169,6 +169,7 @@ plot(cluster2)
 #used in paper, seems not good as cluster1
 cluster3=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
                 method='average') #linkage=Average/using euclidean distance
+pred=cutree(cluster3,4)
 plot(cluster3)
 #not good
 cluster4=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
@@ -193,8 +194,8 @@ rownames(dat)=dat$Gene
 dat = dat %>%
   select(-Gene)
 
-res = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1,
-      clusterAlg="hc",distance="pearson",seed=12,plot="png")
+res = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1
+                        ,clusterAlg="hc",distance="pearson",seed=12,plot="png")
 
 labels=as.data.frame(t(cutree(res[[4]]$consensusTree,4))) %>%
   `colnames<-`(colnames(dat))
@@ -205,8 +206,6 @@ dat_new=bind_rows(dat,labels)
 #######################
 a=as.data.frame(rbind(colnames(dat),cutree(res[[4]]$consensusTree,4))) %>%
   `colnames<-`(value=c("ID","cluster"))
-
-
 
 
 id1= a %>%
@@ -224,18 +223,29 @@ id4dat=dat[,as.character(id4$ID)]
 bcol_bind(id1dat,id2dat)
 ```
 
+#### Try core gnes
+```{r}
+library(cluster)
+dmatrix=1-cor(dat)
+sildist=silhouette(labels,dist=dmatrix)
+```
+
+
 sigclust analysis
 ```{r}
 #pairwise comparison of clusters using 4 clusters
-clust_labels <- data.frame(class = res[[4]]$consensusClass)
-clust_labels <- data.frame(ID = rownames(clust_labels), class = clust_labels$class)
+library(sigclust)
+clust_labels <- data.frame(class = res[[4]]$consensusClass,stringsAsFactors =F)
+clust_labels <- data.frame(ID = rownames(clust_labels), class = clust_labels$class,stringsAsFactors =F)
+clust_labels=clust_labels[sildist[,3]>0,]
 pvals <- matrix(NA, nrow = 4, ncol = 4)
+dat_temp=t(scale(t(dat)))
 for(i in 1:3) {
   for(j in (i+1):4) {
     samples <- clust_labels[clust_labels$class == i | clust_labels$class == j,]
     samples$class[samples$class == i] <- 1
     samples$class[samples$class == j] <- 2
-    out <- sigclust(x = t(dat[samples$ID]), nsim = 1000, labflag = 1, label = samples$class, icovest = 1)
+    out <- sigclust(x = t(dat_temp[,samples$ID]), nsim = 1000, labflag = 1, label = samples$class, icovest = 1)
     pvals[j, i] <- out@pval
   }
 }
