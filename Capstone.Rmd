@@ -149,10 +149,6 @@ library(ConsensusClusterPlus)
 ```
 
 ```{r}
-
-```
-
-```{r}
 #install.packages('fastcluster')
 #library(fastcluster)
 dat= read_delim("222_data/unifiedScaledFiltered.txt",
@@ -177,7 +173,7 @@ cluster4=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
 plot(cluster4)
 ```
 
-#### Consensus Clustering
+#### Consensus Clustering with hierarchical clustering algorithm
 ```{r}
 library(dplyr)
 library(readr)
@@ -227,11 +223,10 @@ bcol_bind(id1dat,id2dat)
 ```{r}
 library(cluster)
 dmatrix=1-cor(dat)
-sildist=silhouette(labels,dist=dmatrix)
+sildist=silhouette(labels,dmatrix=dmatrix)
 ```
 
-
-sigclust analysis
+### sigclust analysis
 ```{r}
 #pairwise comparison of clusters using 4 clusters
 library(sigclust)
@@ -250,6 +245,29 @@ for(i in 1:3) {
   }
 }
 pvals
+```
+
+#### Consensus Clustering with k-means clustering algorithm
+```{r}
+res_k = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1
+                        ,clusterAlg="kmdist",distance="pearson",seed=12,plot="png")
+labels_k=as.data.frame(t(cutree(res_k[[4]]$consensusTree,4))) %>%
+  `colnames<-`(colnames(dat))
+
+clust_labels_k <- data.frame(class = res_k[[4]]$consensusClass,stringsAsFactors =F)
+clust_labels_k <- data.frame(ID = rownames(clust_labels_k), class = clust_labels_k$class,stringsAsFactors =F)
+pvals_k <- matrix(NA, nrow = 4, ncol = 4)
+dat_temp_k=t(scale(t(dat)))
+for(i in 1:3) {
+  for(j in (i+1):4) {
+    samples_k <- clust_labels_k[clust_labels_k$class == i | clust_labels_k$class == j,]
+    samples_k$class[samples_k$class == i] <- 1
+    samples_k$class[samples_k$class == j] <- 2
+    out_k <- sigclust(x = t(dat_temp_k[,samples_k$ID]), nsim = 1000, labflag = 1, label = samples_k$class, icovest = 1)
+    pvals_k[j, i] <- out_k@pval
+  }
+}
+pvals_k
 ```
 
 #SAM: significance anlysis of microarrays
