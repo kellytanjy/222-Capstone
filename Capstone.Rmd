@@ -269,7 +269,11 @@ plot(samfit)
 ```{r}
 library(readxl)
 clinical =read_excel("~/222-Capstone/222_data/mmc5.xls", skip = 1)
-
-
+#Classical
+#classtype=clinical
+classtype=ifelse(clinical$Subtype=='Classical',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`), classtype)
+model=survfit(survobj~1,data = clinical)
+plot(model)
 ```
 
