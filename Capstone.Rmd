@@ -270,10 +270,35 @@ plot(samfit)
 library(readxl)
 clinical =read_excel("~/222-Capstone/222_data/mmc5.xls", skip = 1)
 #Classical
-#classtype=clinical
 classtype=ifelse(clinical$Subtype=='Classical',1,2)
-survobj=Surv(as.numeric(clinical$`Survival (days)`), classtype)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
 model=survfit(survobj~1,data = clinical)
 plot(model)
+```
+```{r}
+#Neural
+classtype=ifelse(clinical$Subtype=='Neural',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model2=survfit(survobj~1,data = clinical)
+plot(model2)
+```
+```{r}
+#Proneural
+classtype=ifelse(clinical$Subtype=='Proneural',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model3=survfit(survobj~1,data = clinical)
+plot(model3)
+```
+
+
+```{r}
+#Mesenchymal
+classtype=ifelse(clinical$Subtype=='Mesenchymal',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model4=survfit(survobj~1,data = clinical)
+plot(model4,conf.int=FALSE)
+lines(model3,col="red",conf.int = FALSE)
+lines(model2,col="blue",conf.int = F)
+lines(model,col="green",conf.int = F)
 ```
 
