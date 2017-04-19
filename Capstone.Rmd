@@ -197,7 +197,10 @@ labels=as.data.frame(t(cutree(res[[4]]$consensusTree,4))) %>%
   `colnames<-`(colnames(dat))
 
 dat_new=bind_rows(dat,labels)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3737a4e5ae522560254448d8b48d2f31ea2e5cb2
 ```
 
 ### sigclust analysis
@@ -208,7 +211,10 @@ clust_labels <- data.frame(class = res[[4]]$consensusClass,stringsAsFactors =F)
 clust_labels <- data.frame(ID = rownames(clust_labels), class = clust_labels$class,stringsAsFactors =F)
 #clust_labels=clust_labels[sildist[,3]>0,]
 pvals <- matrix(NA, nrow = 4, ncol = 4)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3737a4e5ae522560254448d8b48d2f31ea2e5cb2
 #dat_temp=t(scale(t(dat)))
 for(i in 1:3) {
   for(j in (i+1):4) {
@@ -220,6 +226,13 @@ for(i in 1:3) {
   }
 }
 pvals
+```
+
+#### Try core gnes
+```{r}
+library(cluster)
+dmatrix=1-cor(dat)
+sildist=silhouette(labels,dmatrix=dmatrix)
 ```
 
 #### Consensus Clustering with k-means clustering algorithm
@@ -254,21 +267,53 @@ dmatrix=1-cor(dat)
 sildist=silhouette(labels,dmatrix=dmatrix)
 ```
 
-#SAM: significance anlysis of microarrays
 ```{r}
-#install.packages("samr")
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("impute")
 library(samr)
-set.seed(100)
-x<-matrix(rnorm(1000*20),ncol=20)
-dd<-sample(1:1000,size=100)
-u<-matrix(2*rnorm(100),ncol=10,nrow=100)
-x[dd,11:20]<-x[dd,11:20]+u
-y<-c(rep(1,10),rep(2,10))
-samfit<-SAM(x,y,resp.type="Two class unpaired")
-# examine significant gene list
-print(samfit)
-# plot results
+##for class1 analysis
+clusterfor1=clust_labels
+clusterfor1=ifelse(clusterfor1$class==1,1,2)
+samfit=SAM(x=dat,y=clusterfor1,resp.type = 'Two class unpaired')
 plot(samfit)
 ```
+
+#### Survival Analysis
+```{r}
+library(readxl)
+clinical =read_excel("~/222-Capstone/222_data/mmc5.xls", skip = 1)
+#Classical
+classtype=ifelse(clinical$Subtype=='Classical',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model=survfit(survobj~1,data = clinical)
+plot(model)
+```
+
+```{r}
+#Neural
+classtype=ifelse(clinical$Subtype=='Neural',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model2=survfit(survobj~1,data = clinical)
+plot(model2)
+```
+
+```{r}
+#Proneural
+classtype=ifelse(clinical$Subtype=='Proneural',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model3=survfit(survobj~1,data = clinical)
+plot(model3)
+```
+
+
+```{r}
+#Mesenchymal
+classtype=ifelse(clinical$Subtype=='Mesenchymal',1,2)
+survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
+model4=survfit(survobj~1,data = clinical)
+plot(model4,conf.int=FALSE)
+lines(model3,col="red",conf.int = FALSE)
+lines(model2,col="blue",conf.int = F)
+lines(model,col="green",conf.int = F)
+```
+
