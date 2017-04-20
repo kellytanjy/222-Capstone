@@ -290,38 +290,27 @@ clinical = clinical[-1,]
 clinical$Subtype = clust_labels_k$class
 clinical$VITALSTATUS = ifelse(clinical$VITALSTATUS=="DEAD",1,0)
 
-
-# subtype 1
-subtype1 = clinical[clinical$Subtype==1,]
-survobj=Surv(as.numeric(subtype1$`Survival (days)`)/30, subtype1$VITALSTATUS==1)
-model=survfit(survobj~1,data = subtype1)
-
-# subtype 2
-subtype2 = clinical[clinical$Subtype==2,]
-survobj2=Surv(as.numeric(subtype2$`Survival (days)`)/30, subtype2$VITALSTATUS==1)
-model2=survfit(survobj2~1,data = subtype2)
-
-# subtype 3
-subtype3 = clinical[clinical$Subtype==3,]
-survobj3=Surv(as.numeric(subtype3$`Survival (days)`)/30, subtype3$VITALSTATUS==1)
-model3=survfit(survobj3~1,data = subtype3)
-
-# subtype 4
-subtype4 = clinical[clinical$Subtype==4,]
-survobj4=Surv(as.numeric(subtype4$`Survival (days)`)/30, subtype4$VITALSTATUS==1)
-model4=survfit(survobj4~1,data = subtype4)
-
-plot(model,conf.int=F,xlab = "Month", ylab = "Survival", main = "Survival Plot of 4 Subtypes", col = "black")
-lines(model2,col="red",conf.int = F)
-lines(model3,col="blue",conf.int = F)
-lines(model4,col="green",conf.int = F)
+surv_subtype <- survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$Subtype,data=clinical)
+summary(surv_subtype)
+plot(surv_subtype, xlab = "Month", ylab="Survival",col=c("black","red","blue","green"), main = "Survival Plot of 4 Subtypes")
 legend("topright", lwd = 0.8, legend=c("subtype1","subtype2","subtype3","subtype4"), col = c("black","red","blue","green"))
+
+# Test Survival Curve Differences
+diff_subtype= survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$Subtype,data=clinical)
+diff_subtype
 ```
 
 # Try other covariates
 ## Gender
 ```{r}
-survgender<-Surv()
+survgender<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$GENDER, data = clinical)
+summary(survgender)
+plot(survgender, xlab = "Month", ylab = "Survival",col = c("red","black"))
+legend("topright", lwd = 0.8,legend = c("Female","Male"), col = c("red","black"))
+
+# Test Survival Curve Differences
+diff_gender<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$GENDER, data = clinical)
+diff_gender
 ```
 
 ```{r}
