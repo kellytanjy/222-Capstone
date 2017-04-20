@@ -5,7 +5,7 @@ date: "March 5, 2017"
 output: pdf_document
 ---
 
-## Load Package:
+Load Package:
 ```{r}
 library(readr)
 library(tidyr)
@@ -13,7 +13,7 @@ library(dplyr)
 library(reshape2)
 ```
 
-## Read in data
+# Read in data
 ```{r}
 Broad202 = read_delim("222_data/Broad202.txt","\t", escape_double = FALSE, trim_ws = TRUE)
 LBL202 = read_delim("222_data/LBL202.txt","\t", escape_double = FALSE, trim_ws = TRUE)
@@ -30,7 +30,7 @@ unifiedScaled = read_delim("222_data/unifiedScaled.txt",
 rm(list="firstrow")
 ```
 
-## Reshape the data
+# Reshape the data
 ```{r}
 merge_genes=intersect(LBL202$Gene,UNC202$Gene) %>% intersect(Broad202$Gene)
 merge_ids=intersect(colnames(LBL202)[-1],colnames(UNC202)[-1]) %>% 
@@ -49,7 +49,7 @@ lbl=LBL202 %>%
   melt(id.vars='Gene')
 ```
 
-## Boxplot of data
+# Boxplot of data
 Randomly pick 10 genes for each dataset and check their boxplot
 ```{r}
 sub_gene <- sample(merge_genes, size = 10, replace = FALSE)
@@ -57,7 +57,7 @@ sub_lbl <- filter(lbl, Gene %in% sub_gene)
 plot(as.factor(sub_lbl$Gene), sub_lbl$value)
 ```
 
-## range of each dataset
+# range of each dataset
 ```{r}
 range(lbl$value)
 range(unc$value)
@@ -71,7 +71,7 @@ apply(UNC202[1:10,-1],1,mean)
 ```
 After checking the range of gene expression values for each data set, we found out that only UNC202 dataset has negative values, implying that it might be log-transformed already. However, the other two datasets don't contain negative values, so we believed that they are subjective to log-transform. In addition, the three datasets are not mean/median centered either. Therefore, our next step should be log-transforming data and centering data by its median.
 
-## Get Log-transformed & median centered data
+# Get Log-transformed & median centered data
 ```{r}
 #lbl$value=log(lbl$value)
 range(lbl$value)
@@ -82,7 +82,7 @@ UNC202[,-1] = t(apply(UNC202[,-1],1,function(x) {x - median(x)}))
 Broad202[,-1] = t(apply(Broad202[,-1],1,function(x) {x - median(x)}))
 ```
 
-## Reshape the data again
+# Reshape the data again
 ```{r}
 merge_genes=intersect(LBL202$Gene,UNC202$Gene) %>% intersect(Broad202$Gene)
 merge_ids=intersect(colnames(LBL202)[-1],colnames(UNC202)[-1]) %>% 
@@ -101,7 +101,7 @@ lbl=LBL202 %>%
   melt(id.vars='Gene')
 ```
 
-## Boxplot of data
+# Boxplot of data
 Verify that the data has been median-centered and log-transformed
 ```{r}
 sub_gene <- sample(merge_genes, size = 10, replace = FALSE)
@@ -113,7 +113,7 @@ plot(as.factor(sub_unc$Gene), sub_unc$value)
 plot(as.factor(sub_broad$Gene), sub_broad$value)
 ```
 
-## Normalize data
+# Normalize data
 ```{r}
 total=unc %>%
   merge(broad,by=c('Gene','variable')) %>%
@@ -126,7 +126,7 @@ totaltry=total %>%
     lbl=scale(lbl))
 ```
 
-## Factor Analysis
+# Factor Analysis
 ```{r}
 fit=factanal(totaltry[,3:5],1, scores = "regression")
 print(fit)
@@ -173,7 +173,7 @@ cluster4=hclust(as.dist(1-cor(dat[,-1],use='everything',method='pearson')),
 plot(cluster4)
 ```
 
-#### Consensus Clustering with hierarchical clustering algorithm
+# Consensus Clustering with hierarchical clustering algorithm
 ```{r}
 library(dplyr)
 library(readr)
@@ -195,27 +195,16 @@ res = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1
 
 labels=as.data.frame(t(cutree(res[[4]]$consensusTree,4))) %>%
   `colnames<-`(colnames(dat))
-
-dat_new=bind_rows(dat,labels)
-<<<<<<< HEAD
-
-=======
->>>>>>> 3737a4e5ae522560254448d8b48d2f31ea2e5cb2
 ```
 
-### sigclust analysis
+# sigclust analysis
 ```{r}
 #pairwise comparison of clusters using 4 clusters
 library(sigclust)
 clust_labels <- data.frame(class = res[[4]]$consensusClass,stringsAsFactors =F)
 clust_labels <- data.frame(ID = rownames(clust_labels), class = clust_labels$class,stringsAsFactors =F)
-#clust_labels=clust_labels[sildist[,3]>0,]
 pvals <- matrix(NA, nrow = 4, ncol = 4)
-<<<<<<< HEAD
 
-=======
->>>>>>> 3737a4e5ae522560254448d8b48d2f31ea2e5cb2
-#dat_temp=t(scale(t(dat)))
 for(i in 1:3) {
   for(j in (i+1):4) {
     samples <- clust_labels[clust_labels$class == i | clust_labels$class == j,]
@@ -228,17 +217,10 @@ for(i in 1:3) {
 pvals
 ```
 
-#### Try core gnes
-```{r}
-library(cluster)
-dmatrix=1-cor(dat)
-sildist=silhouette(labels,dmatrix=dmatrix)
-```
 
-#### Consensus Clustering with k-means clustering algorithm
+# Consensus Clustering with k-means clustering algorithm
 ```{r}
-res_k = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1
-                        ,clusterAlg="kmdist",distance="pearson",seed=12,plot="png")
+res_k = ConsensusClusterPlus(as.matrix(dat),maxK=10,reps=1000,pItem=0.8,pFeature=1,clusterAlg="kmdist",distance="pearson",seed=12,plot="png")
 labels_k=as.data.frame(t(cutree(res_k[[4]]$consensusTree,4))) %>%
   `colnames<-`(colnames(dat))
 
@@ -255,65 +237,97 @@ for(i in 1:3) {
     pvals_k[j, i] <- out_k@pval
   }
 }
-pvals_k
 colnames(pvals_k) <- c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4")
 rownames(pvals_k) <- c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4")
+pvals_k
 ```
 
-#### Try core gnes
+# Try core gnes
 ```{r}
 library(cluster)
 dmatrix=1-cor(dat)
 sildist=silhouette(labels,dmatrix=dmatrix)
 ```
 
+# SAM
 ```{r}
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("impute")
 library(samr)
 ##for class1 analysis
-clusterfor1=clust_labels
-clusterfor1=ifelse(clusterfor1$class==1,1,2)
-samfit=SAM(x=dat,y=clusterfor1,resp.type = 'Two class unpaired')
-plot(samfit)
+label1=clust_labels_k$class
+label1=ifelse(label1==1,1,2)
+samfit1=SAM(x=dat,y=label1,resp.type = 'Two class unpaired')
+plot(samfit1)
+
+label2=clust_labels_k$class
+label2=ifelse(label2==2,1,2)
+samfit2=SAM(x=dat,y=label2,resp.type = 'Two class unpaired')
+plot(samfit2)
+
+label3=clust_labels_k$class
+label3=ifelse(label3==3,1,2)
+samfit3=SAM(x=dat,y=label3,resp.type = 'Two class unpaired')
+plot(samfit3)
+
+label4=clust_labels_k$class
+label4=ifelse(label4==4,1,2)
+samfit4=SAM(x=dat,y=label4,resp.type = 'Two class unpaired')
+plot(samfit4)
 ```
 
-#### Survival Analysis
+# Survival Analysis
+## Survival of 4 subtypes
 ```{r}
-library(readxl)
-clinical =read_excel("~/222-Capstone/222_data/mmc5.xls", skip = 1)
-#Classical
-classtype=ifelse(clinical$Subtype=='Classical',1,2)
+#install.packages("readxl")
+library(survival)
+#library(readxl)
+#clinical =read_excel("~/222-Capstone/222_data/mmc5.xls", skip = 1)
+clinical = read_csv("222_data/clinicaldata.csv", col_names = F)
+clinical = clinical[-1,]
+colnames(clinical) = clinical[1,]
+clinical = clinical[-1,]
+clinical$Subtype = clust_labels_k$class
+
+# subtype 1
+classtype=ifelse(clinical$Subtype==1,1,2)
 survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
 model=survfit(survobj~1,data = clinical)
-plot(model)
+
+# subtype 2
+classtype2=ifelse(clinical$Subtype==2,1,2)
+survobj2=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype2)
+model2=survfit(survobj2~1,data = clinical)
+
+# subtype 3
+classtype3=ifelse(clinical$Subtype==3,1,2)
+survobj3=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype3)
+model3=survfit(survobj3~1,data = clinical)
+
+# subtype 4
+classtype4=ifelse(clinical$Subtype==4,1,2)
+survobj4=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype4)
+model4=survfit(survobj4~1,data = clinical)
+
+plot(model,conf.int=F,xlab = "Month", ylab = "Survival", main = "Survival Plot of 4 Subtypes", col = "black")
+lines(model2,col="red",conf.int = F)
+lines(model3,col="blue",conf.int = F)
+lines(model4,col="green",conf.int = F)
+legend("topright", lwd = 0.8, legend=c("subtype1","subtype2","subtype3","subtype4"), col = c("black","red","blue","green"))
+```
+
+# Try other covariates
+## Gender
+```{r}
+
 ```
 
 ```{r}
-#Neural
-classtype=ifelse(clinical$Subtype=='Neural',1,2)
-survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
-model2=survfit(survobj~1,data = clinical)
-plot(model2)
-```
 
-```{r}
-#Proneural
-classtype=ifelse(clinical$Subtype=='Proneural',1,2)
-survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
-model3=survfit(survobj~1,data = clinical)
-plot(model3)
 ```
 
 
 ```{r}
-#Mesenchymal
-classtype=ifelse(clinical$Subtype=='Mesenchymal',1,2)
-survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
-model4=survfit(survobj~1,data = clinical)
-plot(model4,conf.int=FALSE)
-lines(model3,col="red",conf.int = FALSE)
-lines(model2,col="blue",conf.int = F)
-lines(model,col="green",conf.int = F)
+
 ```
 
