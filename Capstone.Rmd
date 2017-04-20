@@ -313,12 +313,27 @@ diff_gender<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$V
 diff_gender
 ```
 
+# Secondary or Recurrent
 ```{r}
+surv_rec<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
+summary(surv_rec)
+plot(surv_rec, xlab = "Month", ylab = "Survival",col = c("red","black","blue"))
+legend("topright", lwd = 0.8,legend = c("No","Recurrent","Secondary"), col = c("red","black","blue"))
 
+# Test Survival Curve Differences
+diff_rec<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
+diff_rec
 ```
 
-
+# Methylated or Unmethlyated
 ```{r}
+surv_me<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$MGMT_methylated, data = clinical)
+summary(surv_me)
+plot(surv_me, xlab = "Month", ylab = "Survival",col = c("red","black"))
+legend("topright", lwd = 0.8,legend = c("Methylated","Unmethlyated"), col = c("red","black"))
 
+# Test Survival Curve Differences
+diff_me<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$MGMT_methylated, data = clinical)
+diff_me
 ```
 
