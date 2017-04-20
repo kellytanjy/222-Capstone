@@ -288,26 +288,28 @@ clinical = clinical[-1,]
 colnames(clinical) = clinical[1,]
 clinical = clinical[-1,]
 clinical$Subtype = clust_labels_k$class
+clinical$VITALSTATUS = ifelse(clinical$VITALSTATUS=="DEAD",1,0)
+
 
 # subtype 1
-classtype=ifelse(clinical$Subtype==1,1,2)
-survobj=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype)
-model=survfit(survobj~1,data = clinical)
+subtype1 = clinical[clinical$Subtype==1,]
+survobj=Surv(as.numeric(subtype1$`Survival (days)`)/30, subtype1$VITALSTATUS==1)
+model=survfit(survobj~1,data = subtype1)
 
 # subtype 2
-classtype2=ifelse(clinical$Subtype==2,1,2)
-survobj2=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype2)
-model2=survfit(survobj2~1,data = clinical)
+subtype2 = clinical[clinical$Subtype==2,]
+survobj2=Surv(as.numeric(subtype2$`Survival (days)`)/30, subtype2$VITALSTATUS==1)
+model2=survfit(survobj2~1,data = subtype2)
 
 # subtype 3
-classtype3=ifelse(clinical$Subtype==3,1,2)
-survobj3=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype3)
-model3=survfit(survobj3~1,data = clinical)
+subtype3 = clinical[clinical$Subtype==3,]
+survobj3=Surv(as.numeric(subtype3$`Survival (days)`)/30, subtype3$VITALSTATUS==1)
+model3=survfit(survobj3~1,data = subtype3)
 
 # subtype 4
-classtype4=ifelse(clinical$Subtype==4,1,2)
-survobj4=Surv(as.numeric(clinical$`Survival (days)`)/30, classtype4)
-model4=survfit(survobj4~1,data = clinical)
+subtype4 = clinical[clinical$Subtype==4,]
+survobj4=Surv(as.numeric(subtype4$`Survival (days)`)/30, subtype4$VITALSTATUS==1)
+model4=survfit(survobj4~1,data = subtype4)
 
 plot(model,conf.int=F,xlab = "Month", ylab = "Survival", main = "Survival Plot of 4 Subtypes", col = "black")
 lines(model2,col="red",conf.int = F)
@@ -319,7 +321,7 @@ legend("topright", lwd = 0.8, legend=c("subtype1","subtype2","subtype3","subtype
 # Try other covariates
 ## Gender
 ```{r}
-
+survgender<-Surv()
 ```
 
 ```{r}
