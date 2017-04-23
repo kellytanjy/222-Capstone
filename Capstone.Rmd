@@ -289,58 +289,68 @@ colnames(clinical) = clinical[1,]
 clinical = clinical[-1,]
 clinical$Subtype = clust_labels_k$class
 clinical$VITALSTATUS = ifelse(clinical$VITALSTATUS=="DEAD",1,0)
+clinical$AgeAtFirstDiagnosis = as.numeric(clinical$AgeAtFirstDiagnosis)
+clinical$sil_width = as.numeric(clinical$sil_width)
+clinical$KarnScore = as.numeric(clinical$KarnScore)
+clinical$`Survival (days)` = as.numeric(clinical$`Survival (days)`)
+clinical$`% Tumor Nuclei` = as.numeric(clinical$`% Tumor Nuclei`)
+clinical$`% Necrosis` = as.numeric(clinical$`% Necrosis`)
 
-surv_subtype <- survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$Subtype,data=clinical)
+surv_subtype <- survfit(Surv(`Survival (days)`/30, VITALSTATUS==1)~Subtype,data=clinical)
 summary(surv_subtype)
 plot(surv_subtype, xlab = "Month", ylab="Survival",col=c("black","red","blue","green"), main = "Survival Plot of 4 Subtypes")
 legend("topright", lwd = 0.8, legend=c("subtype1","subtype2","subtype3","subtype4"), col = c("black","red","blue","green"))
 
 # Test Survival Curve Differences
-diff_subtype= survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$Subtype,data=clinical)
+diff_subtype= survdiff(Surv(`Survival (days)`/30, VITALSTATUS==1)~Subtype,data=clinical)
 diff_subtype
 ```
 
 # Try other covariates
 ## Gender
 ```{r}
-survgender<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$GENDER, data = clinical)
+survgender<-survfit(Surv(`Survival (days)`/30, VITALSTATUS==1)~GENDER, data = clinical)
 summary(survgender)
 plot(survgender, xlab = "Month", ylab = "Survival",col = c("red","black"))
 legend("topright", lwd = 0.8,legend = c("Female","Male"), col = c("red","black"))
 
 # Test Survival Curve Differences
-diff_gender<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$GENDER, data = clinical)
+diff_gender<-survdiff(Surv(`Survival (days)`/30, VITALSTATUS==1)~GENDER, data = clinical)
 diff_gender
 ```
 
 # Secondary or Recurrent
 ```{r}
-surv_rec<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
+surv_rec<-survfit(Surv(`Survival (days)`/30, VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
 summary(surv_rec)
 plot(surv_rec, xlab = "Month", ylab = "Survival",col = c("red","black","blue"))
 legend("topright", lwd = 0.8,legend = c("No","Recurrent","Secondary"), col = c("red","black","blue"))
 
 # Test Survival Curve Differences
-diff_rec<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
+diff_rec<-survdiff(Surv(`Survival (days)`/30, VITALSTATUS==1)~clinical$`Secondary or Recurrent`, data = clinical)
 diff_rec
 ```
 
 # Methylated or Unmethlyated
 ```{r}
-surv_me<-survfit(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$MGMT_methylated, data = clinical)
+surv_me<-survfit(Surv(`Survival (days)`/30, VITALSTATUS==1)~MGMT_methylated, data = clinical)
 summary(surv_me)
 plot(surv_me, xlab = "Month", ylab = "Survival",col = c("red","black"))
 legend("topright", lwd = 0.8,legend = c("Methylated","Unmethlyated"), col = c("red","black"))
 
 # Test Survival Curve Differences
-diff_me<-survdiff(Surv(as.numeric(clinical$`Survival (days)`)/30, clinical$VITALSTATUS==1)~clinical$MGMT_methylated, data = clinical)
+diff_me<-survdiff(Surv(`Survival (days)`/30, VITALSTATUS==1)~MGMT_methylated, data = clinical)
 diff_me
 ```
 
 # Try Cox regression
 ```{r}
-res.cox <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated, data =  clinical)
+res.cox <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`+KarnScore, data =  clinical)
 summary(res.cox)
+
+res.cox2 <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`, data =  clinical)
+summary(res.cox2)
+
 ```
 
 The Cox regression results can be interpreted as follow:
