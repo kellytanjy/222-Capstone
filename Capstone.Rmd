@@ -242,7 +242,7 @@ rownames(pvals_k) <- c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4")
 pvals_k
 ```
 
-# Try core gnes
+# Try core samples
 ```{r}
 library(cluster)
 dmatrix=1-cor(dat)
@@ -258,21 +258,47 @@ library(samr)
 label1=clust_labels_k$class
 label1=ifelse(label1==1,1,2)
 samfit1=SAM(x=dat,y=label1,resp.type = 'Two class unpaired')
+siggenes1 = samfit1$siggenes.table
+# over-expressed genes in cluster 1
+upgene1 = siggenes1$genes.up
+upindex1 = sample(nrow(upgene1),10)
+# sample 10 over-expressed genes
+upgene1 = upgene1[upindex1,]
+up1 = dat[as.numeric(upgene1[,"Gene Name"]),]
+rownames(up1) = rownames(dat)[as.numeric(upgene1[,"Gene Name"])]
+up1 = t(up1)
+
+# under-expressed genes in cluster 1
+lowgene1 = siggenes1$genes.lo
+lowindex1 = sample(nrow(lowgene1),10)
+lowgene1 = lowgene1[lowindex1,]
+low1 = dat[as.numeric(lowgene1[,"Gene Name"]),]
+rownames(low1) = rownames(dat)[as.numeric(lowgene1[,"Gene Name"])]
+low1 = t(low1)
 plot(samfit1)
 
 label2=clust_labels_k$class
 label2=ifelse(label2==2,1,2)
 samfit2=SAM(x=dat,y=label2,resp.type = 'Two class unpaired')
+siggenes2 = samfit2$siggenes.table
+upgene2 = siggenes2$genes.up
+lowgene2 = siggenes2$genes.lo
 plot(samfit2)
 
 label3=clust_labels_k$class
 label3=ifelse(label3==3,1,2)
 samfit3=SAM(x=dat,y=label3,resp.type = 'Two class unpaired')
+siggenes3 = samfit3$siggenes.table
+upgene3 = siggenes3$genes.up
+lowgene3 = siggenes3$genes.lo
 plot(samfit3)
 
 label4=clust_labels_k$class
 label4=ifelse(label4==4,1,2)
 samfit4=SAM(x=dat,y=label4,resp.type = 'Two class unpaired')
+siggenes4 = samfit4$siggenes.table
+upgene4 = siggenes4$genes.up
+lowgene4 = siggenes4$genes.lo
 plot(samfit4)
 ```
 
@@ -345,12 +371,21 @@ diff_me
 
 # Try Cox regression
 ```{r}
+# model 1
 res.cox <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`+KarnScore, data =  clinical)
 summary(res.cox)
 
+# model 2
 res.cox2 <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`, data =  clinical)
 summary(res.cox2)
 
+up_clinical <- cbind(clinical,up1)
+res.cox3 <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`+DDAH1+ALDH7A1+ARHGAP5+KIAA1641+TTC3+SDC3+SCN1A+FAM64A+PRIM1+ZNF84, data =  up_clinical)
+summary(res.cox3)
+
+up_low_clinical <- cbind(up_clinical, low1)
+res.cox4 <- coxph(Surv(as.numeric(`Survival (days)`)/30, VITALSTATUS==1) ~ GENDER + `Secondary or Recurrent` + MGMT_methylated + AgeAtFirstDiagnosis +clinical$`% Tumor Nuclei`+clinical$`% Necrosis`+DDAH1+ALDH7A1+ARHGAP5+KIAA1641+TTC3+SDC3+SCN1A+FAM64A+PRIM1+ZNF84+CRYZ+EPAS1+SERPINB8+RRAS+LST1+FLNA+PTER+BTN3A3+PMAIP1+CCDC6, data =  up_low_clinical)
+summary(res.cox4)
 ```
 
 The Cox regression results can be interpreted as follow:
